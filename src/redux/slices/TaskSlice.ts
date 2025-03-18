@@ -34,17 +34,7 @@ export const createTask = createAsyncThunk(
 );
 
 
-export const getTasks = createAsyncThunk(
-    'tasks/getTasks',
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await taskService.GetTasks(); // Отримуємо список тасок
-            return response;
-        } catch (error) {
-            return rejectWithValue(error || 'Error fetching tasks');
-        }
-    }
-);
+
 
 const taskSlice = createSlice({
     name: 'tasks',
@@ -57,25 +47,16 @@ const taskSlice = createSlice({
                 state.loading = false;
                 state.error = null;
             })
-            .addCase(getTasks.fulfilled, (state, action) => {
-                state.tasks = action.payload;  // Оновлюємо список тасок
-                state.loading = false;
-                state.error = null;
-            })
+
             .addCase(createTask.rejected, (state, action) => {
                 state.error = action.payload as string;
                 state.loading = false;
             })
-            .addCase(getTasks.rejected, (state, action) => {
-                state.error = action.payload as string;
-                state.loading = false;
-            })
+
             .addCase(createTask.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getTasks.pending, (state) => {
-                state.loading = true;
-            });
+
     }
 });
 
@@ -83,7 +64,6 @@ const { reducer: taskReducer } = taskSlice;
 
 export const taskAction = {
     createTask,
-    getTasks,
 };
 
 export { taskReducer };

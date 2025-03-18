@@ -7,16 +7,12 @@ const taskService = {
         const response = await axios.post('http://localhost:3000/task/task', taskData);  // API call to create task
         return response.data;
     },
-    GetTasks: async () => {
-        try {
-            const response = await axios.get('http://localhost:3000/task');
-            console.log('Server response:', response);
+
+        GetTasks: async (status: string) => {
+            const params = status ? { status } : {};
+            const response = await axios.get('http://localhost:3000/task', { params });
             return response.data;
-        } catch (error) {
-            console.error('Error fetching tasks:', error);
-            throw error;
         }
-    },
-};
+    };
 
 export { taskService };

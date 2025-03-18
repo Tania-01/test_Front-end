@@ -1,21 +1,24 @@
-// TaskListComponent.tsx
-import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { useAppSelector } from '../../hooks/reduxHooks';
-import {taskAction} from "../../redux/slices/TaskSlice";
-import {AppDispatch} from "../../types/reduxType";
-import {Link} from "react-router-dom";
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { taskService } from '../../services/taskService';
+import { Link } from 'react-router-dom';
+
+
+const fetchTasks = async (statusFilter: string) => {
+    const response = await taskService.GetTasks(statusFilter);
+    return response;
+};
 
 const TaskListComponent = () => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { tasks, loading, error } = useAppSelector((state) => state.task);
+    const [statusFilter, setStatusFilter] = React.useState('done');
 
-    useEffect(() => {
-        dispatch(taskAction.getTasks());
-    }, [dispatch]);
+    const { data: tasks, isLoading, isError, error } = useQuery({
+        queryKey: ['task', statusFilter],
+        queryFn: () => fetchTasks(statusFilter),
+    });
 
-    if (loading) return <p>Loading tasks...</p>;
-    if (error) return <p>{error}</p>;
+    if (isLoading) return <p>Loading tasks...</p>;
+    if (isError) return <p>Error: {error?.message}</p>;
 
     if (!Array.isArray(tasks)) {
         return <p>Invalid data format: tasks is not an array</p>;
@@ -24,6 +27,19 @@ const TaskListComponent = () => {
     return (
         <div>
             <h2>Task List</h2>
+            <div>
+                <label htmlFor="statusFilter">Filter by Status:</label>
+                <select
+                    id="statusFilter"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}  // Оновлюємо фільтр при зміні
+                >
+                    <option value="done">Done</option>
+                    <option value="inProgress">In Progress</option>
+                    <option value="todo">To Do</option>
+                </select>
+            </div>
+
             <ul>
                 {tasks.map((task) => (
                     <li key={task.id}>
@@ -32,10 +48,10 @@ const TaskListComponent = () => {
                         <p>Status: {task.status}</p>
                     </li>
                 ))}
-                <Link to="/task_add">
-                    <button>Add New Task</button>
-                </Link>
             </ul>
+            <Link to="/task_add">
+                <button>Add New Task</button>
+            </Link>
         </div>
     );
 };
